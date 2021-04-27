@@ -104,8 +104,22 @@ static void* doit(void* a)
                 buf = buf.substr(0, Max);
                 std::cout << buf << std::endl;
                 delete[] buffer;
-                if (InURL.substr(0, 4) == "/add") {
-                    db.InsertDBData("INSERT INTO FileName (Name) VALUES (" + buf + ")");
+                if (InURL.substr(6, 4) == "/add") {
+                    auto i = db.InsertDBData("INSERT INTO FileName (Name) VALUES (\'" + buf + "\')");
+                    if (!i) {
+                        db.GeSsqlError();
+                    }
+                    FCGX_PutS("OK", request.out);
+                }
+                if (InURL.substr(6, 4) == "/del") {
+                    auto i = db.InsertDBData("DELETE FROM FileName WHERE Name = \'" + buf + "\'");
+                    if (!i) {
+                        db.GeSsqlError();
+                    }
+                    FCGX_PutS("OK", request.out);
+                }
+                if (InURL.substr(6, 4) == "/manualSQL") {
+                    auto i = db.SelectData(buf);
                 }
                 if (InURL.substr(6, 6) == "/login") {
                     json responseJson = json::parse(buf);
@@ -122,6 +136,9 @@ static void* doit(void* a)
                             std::cout << db.GeSsqlError() << std::endl;
                         }
                     }
+                }
+                if (InURL.substr(6, 13) == "/offInErrorOK") {
+                    exit(0);
                 }
                 if (InURL.substr(6, 4) == "/set") {
                     fileName = buf;
